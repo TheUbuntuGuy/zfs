@@ -319,13 +319,12 @@ mount_fs()
 
 	# Need the _original_ datasets mountpoint!
 	mountpoint=$(get_fs_value "$fs" mountpoint)
-	if [ "$mountpoint" = "legacy" -o "$mountpoint" = "none" ]; then
+	if [ "$mountpoint" = "legacy" ]; then
 		# Can't use the mountpoint property. Might be one of our
 		# clones. Check the 'org.zol:mountpoint' property set in
 		# clone_snap() if that's usable.
 		mountpoint=$(get_fs_value "$fs" org.zol:mountpoint)
 		if [ "$mountpoint" = "legacy" -o \
-		    "$mountpoint" = "none" -o \
 		    "$mountpoint" = "-" ]
 		then
 			if [ "$fs" != "${ZFS_BOOTFS}" ]; then
@@ -338,6 +337,8 @@ mount_fs()
 				# Last hail-mary: Hope 'rootmnt' is set!
 				mountpoint=""
 			fi
+		elif [ "$mountpoint" = "none" ]; then
+			return 0
 		fi
 
 		if [ "$mountpoint" = "legacy" ]; then
@@ -347,6 +348,8 @@ mount_fs()
 			# native one...
 			ZFS_CMD="mount -o zfsutil -t zfs"
 		fi
+	elif [ "$mountpoint" = "none" ]; then
+		return 0
 	else
 		ZFS_CMD="mount -o zfsutil -t zfs"
 	fi
